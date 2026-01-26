@@ -8,5 +8,5 @@ https://github.com/Rumidom/ugif
 
 ## Meme Reciever:
 I made this mini computer to recieve images via a telegram bot, that script has its own repository:  
-https://github.com/Rumidom/Meme-Receiver
+[https://github.com/Rumidom/Meme-Receiver](https://github.com/Rumidom/Meme-Reciever/tree/main)
 
