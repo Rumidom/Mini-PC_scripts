@@ -1,5 +1,6 @@
 # Mini Computer examples
-A few micropython examples to run on this [Mini computer](https://cults3d.com/en/3d-model/gadget/esp32-mini-vintage-computer)
+A few micropython examples to run on this [Mini computer](https://cults3d.com/en/3d-model/gadget/esp32-mini-vintage-computer):
+![Alt Text](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
  
 ## Libraries:
 the libraries here might be outdated, their repositories are:   
