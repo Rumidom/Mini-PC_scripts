@@ -6,6 +6,7 @@ from machine import Pin, SPI
 import json
 import network
 import time
+import sys
 
 screen_width = 240
 screen_height = 240
@@ -106,8 +107,9 @@ def TimeString():
     return (hour+':'+minutes+':'+seconds+' '+day+'/'+month+'/'+year)
 
 ConnectToSSID(wifi_ssid,password=wifi_password)
-PrintToScreen('Getting The Time Online',0,20)
-GetTime()
-display.fill(0)
-while True:
-    PrintToScreen(TimeString(),40,100)
+if wlan.isconnected():
+    PrintToScreen('Getting The Time Online',0,20)
+    GetTime()
+    display.fill(0)
+    while True:
+        PrintToScreen(TimeString(),40,100)
