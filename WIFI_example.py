@@ -12,9 +12,6 @@ screen_width = 240
 screen_height = 240
 screen_rotation = 3
 
-textH = 8
-textW = 240
-
 wifi_ssid = 'YOURWIFISSID'
 wifi_password = 'YOURWIFIPASSWORD'
 
@@ -37,12 +34,6 @@ display = st7789.ST7789(
     backlight=Pin(7, Pin.OUT),
     rotation=screen_rotation)
 
-#Because the screen is larger 240x240 pixels creating a buffer for the whole
-#screen is impratical as it would consume 240*240*2 = 115.2kb of ram
-#we will only update a portion of the screen where the text will be written
-textBuffer = bytearray(screen_width * textH * 2) #two bytes for each pixel
-textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
-textfbuf.fill(0)
 display.fill(0)
 
 white = st7789.color565(255, 255, 255)
@@ -50,13 +41,25 @@ white = st7789.color565(255, 255, 255)
 wlan = network.WLAN(network.STA_IF)
 
 def PrintToScreen(text,x,y):
-    IBM_font = fontlib.font("IBM BIOS (8,8).bmp") # Loads font to ram
     textW = screen_width
     textH = 8
+    textBuffer = bytearray(screen_width * textH * 2) #two bytes for each pixel
+    textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
+    IBM_font = fontlib.font("IBM BIOS (8,8).bmp") # Loads font to ram
     textfbuf.fill(0)
     fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=white)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
 
+def PrintToScreenLarge(text,x,y):
+    textW = screen_width
+    textH = 16
+    textBuffer = bytearray(screen_width * textH * 2) #two bytes for each pixel
+    textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
+    IBM_font = fontlib.font("IBM BIOS (16,16).bmp") # Loads font to ram
+    textfbuf.fill(0)
+    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=white)
+    display.blit_buffer(textBuffer, 0, y, textW, textH)
+    
 def ConnectToSSID(SSID,password=''):
     wlan.active(True)
     wlan.disconnect()
@@ -104,7 +107,16 @@ def TimeString():
     hour = "%02d" % time.gmtime()[3]
     minutes = "%02d" % time.gmtime()[4]
     seconds = "%02d" % time.gmtime()[5]
-    return (hour+':'+minutes+':'+seconds+' '+day+'/'+month+'/'+year)
+    return (hour+':'+minutes+':'+seconds)
+
+def DateString():
+    year = str(time.gmtime()[0])
+    month = "%02d" % time.gmtime()[2]
+    day = "%02d" % time.gmtime()[1]
+    hour = "%02d" % time.gmtime()[3]
+    minutes = "%02d" % time.gmtime()[4]
+    seconds = "%02d" % time.gmtime()[5]
+    return (day+'/'+month+'/'+year)
 
 ConnectToSSID(wifi_ssid,password=wifi_password)
 if wlan.isconnected():
@@ -112,4 +124,5 @@ if wlan.isconnected():
     GetTime()
     display.fill(0)
     while True:
-        PrintToScreen(TimeString(),40,100)
+        PrintToScreenLarge(TimeString(),54,100)
+        PrintToScreenLarge(DateString(),38,120)

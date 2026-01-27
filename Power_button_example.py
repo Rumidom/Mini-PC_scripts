@@ -3,9 +3,7 @@ import st7789 as st7789
 import framebuf
 from machine import Pin, SPI
 import machine
-
-
-
+import time
     
 screen_width = 240
 screen_height = 240
@@ -33,9 +31,6 @@ display = st7789.ST7789(
     backlight=Pin(7, Pin.OUT),
     rotation=screen_rotation)
 
-
-
-        
 Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
 white = st7789.color565(255, 255, 255)
 
