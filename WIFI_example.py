@@ -7,6 +7,7 @@ import json
 import network
 import time
 import sys
+import machine
 
 screen_width = 240
 screen_height = 240
@@ -14,6 +15,12 @@ screen_rotation = 3
 
 wifi_ssid = 'YOURWIFISSID'
 wifi_password = 'YOURWIFIPASSWORD'
+
+Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
+
+# waits for power button to be pressed
+while not Power_button.value():
+    pass
 
 spi = SPI(1,
           baudrate=31250000,
@@ -36,8 +43,15 @@ display = st7789.ST7789(
 
 display.fill(0)
 
-white = st7789.color565(255, 255, 255)
+# interupt to reset the system when power button is turned off
+def handle_interrupt(pin):
+    print("Powering Down")
+    display.fill(0)
+    machine.reset()
+    
+Power_button.irq(trigger=Pin.IRQ_FALLING, handler=handle_interrupt)
 
+white = st7789.color565(255, 255, 255)
 wlan = network.WLAN(network.STA_IF)
 
 def PrintToScreen(text,x,y):

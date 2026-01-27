@@ -44,4 +44,6 @@ def PrintToScreen(font,text,x,y):
     fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=white)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
 
-PrintToScreen(IBM_font,'Hello World',0,0)
+PrintToScreen(IBM_font,'Sphinx of ',0,100)
+PrintToScreen(IBM_font,'Black Quartz',0,120)
+PrintToScreen(IBM_font,'Judge My Vow.',0,140)
