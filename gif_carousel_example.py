@@ -37,6 +37,5 @@ while True:
     for filepath in gif_files:
         gif_obj = gif('gifs/' + filepath)
         display.fill(0)
-        for i in range(len(gif_obj.Frames)):
-            gif_obj.BlitFrameToScreen(0, drawToScreen_PixelbyPixel)
-            time.sleep(10)
+        gif_obj.BlitFrameToScreen(0, drawToScreen_PixelbyPixel)
+        time.sleep(10)
