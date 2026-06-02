@@ -30,7 +30,7 @@ def drawToScreen_PixelbyPixel(x, y, color):
     display.pixel(x, y, color)
 
 display.fill(0)
-gif_files = ['01.gif','02.gif','03.gif','04.gif',]
+gif_files = ['01.gif','02.gif','03.gif','04.gif']
 gif_files.sort()
 
 while True:
