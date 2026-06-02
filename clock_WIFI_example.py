@@ -101,41 +101,40 @@ def ConnectToSSID(SSID,password=''):
         return(False)
 
 # find your UTC offset here: https://en.wikipedia.org/wiki/List_of_UTC_offsets
-def GetTime(UTC_offset = -3):
-    url = 'https://time.now/developer/api/timezone/UTC'
+def GetTimeNtp():
     try:
-        resp = urequests.get(url)
-        unixtime = resp.json()['unixtime']
-        offset_seconds = int(UTC_offset * 3600)
-        if resp.status_code == 200:
-            time.gmtime(time.time() + offset_seconds)
-            return(True)
+        ntptime.settime()
+        return True
     except Exception as e:
         sys.print_exception(e, sys.stdout)
-        return None
+        return False
     
-def TimeString():
-    year = str(time.gmtime()[0])
-    month = "%02d" % time.gmtime()[2]
-    day = "%02d" % time.gmtime()[1]
-    hour = "%02d" % time.gmtime()[3]
-    minutes = "%02d" % time.gmtime()[4]
-    seconds = "%02d" % time.gmtime()[5]
+def TimeString(UTC_OFFSET=-3):
+    offset_seconds = int(UTC_OFFSET * 3600)
+    local_time = time.gmtime(time.time() + offset_seconds)
+    year = str(local_time[0])
+    month = "%02d" % local_time[2]
+    day = "%02d" % local_time[1]
+    hour = "%02d" % local_time[3]
+    minutes = "%02d" % local_time[4]
+    seconds = "%02d" % local_time[5]
     return (hour+':'+minutes+':'+seconds)
 
-def DateString():
+def DateString(UTC_OFFSET=-3):
+    offset_seconds = int(UTC_OFFSET * 3600)
+    local_time = time.gmtime(time.time() + offset_seconds)
     year = str(time.gmtime()[0])
-    month = "%02d" % time.gmtime()[2]
-    day = "%02d" % time.gmtime()[1]
-    hour = "%02d" % time.gmtime()[3]
-    minutes = "%02d" % time.gmtime()[4]
-    seconds = "%02d" % time.gmtime()[5]
+    month = "%02d" % local_time[2]
+    day = "%02d" % local_time[1]
+    hour = "%02d" % local_time[3]
+    minutes = "%02d" % local_time[4]
+    seconds = "%02d" % local_time[5]
     return (day+'/'+month+'/'+year)
 
 ConnectToSSID(wifi_ssid,password=wifi_password)
 if wlan.isconnected():
     PrintToScreen('Getting The Time Online',0,20)
-    GetTime()
+    GetTimeNtp()
     display.fill(0)
     while True:
         PrintToScreenLarge(TimeString(),54,100)
