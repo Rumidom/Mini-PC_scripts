@@ -19,7 +19,6 @@ max_chars_on_screen = 15 # 16x16 font
 wifi_ssid = 'YOURWIFISSID'
 wifi_password = 'YOURWIFIPASSWORD'
 
-
 Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
 
 # waits for power button to be pressed
@@ -191,44 +190,47 @@ SourceIndex = 0
 headlineIndex = 0
 news_dict = {}
 sources_list = []
+ntptime.settime()
+display.fill(0)
+last_time_string = ''
 
-if wlan.isconnected():
-    PrintToScreen('Getting The Time Online',0,20)
-    ntptime.settime()
-    display.fill(0)
-    while True:
-        time_string = TimeString()
-        date_string = DateString()
+while True:
+    time_string = TimeString()
+    date_string = DateString()
+    
+    if time_string != last_time_string:
         PrintToScreenLarge(time_string,54,100)
-                
-        if time_string.split(':')[1] == '00':
-            news_dict = {} # resets the news_dictionary every hour
+        last_time_string = time_string
         
-        if news_dict == {}:
-            PrintToScreenLarge(DateString(),38,120) # no need to print every loop
-            #PrintToScreenLarge('[Loading News]',2,150)
-            time.sleep(1)
-            news_dict = GetNewsDict()
-            if news_dict != {}:
-                sources_list = list(news_dict.keys())
-                print(sources_list)
-            else:
-                time.sleep(10)
+    if time_string.split(':')[1] == '00':
+        news_dict = {} # resets the news_dictionary every hour
+    
+    if news_dict == {}:
+        PrintToScreenLarge(DateString(),38,120) # no need to print every loop
+        #PrintToScreenLarge('[Loading News]',2,150)
+        time.sleep(1)
+        news_dict = GetNewsDict()
+        if news_dict != {}:
+            sources_list = list(news_dict.keys())
+            print(sources_list)
         else:
-            source = sources_list[SourceIndex]
-            news = news_dict[source]
-            if len(news) > 0:
-                headline_len = len(news[headlineIndex]['title'])
-                if ScrowIndex > (headline_len+max_chars_on_screen)*16:
-                    headlineIndex += 1
-                    ScrowIndex = 0
-                if headlineIndex >= len(news):    
-                    headlineIndex = 0
-                    SourceIndex += 1
-                if SourceIndex >= len(sources_list):
-                    SourceIndex = 0
-                    
-                ScrowNews(news,source,headlineIndex,ScrowIndex,150)
-                ScrowIndex += 32
-            else:
+            time.sleep(10)
+    else:
+        source = sources_list[SourceIndex]
+        news = news_dict[source]
+        if len(news) > 0:
+            headline_len = len(news[headlineIndex]['title'])
+            if ScrowIndex > (headline_len+max_chars_on_screen)*16:
+                headlineIndex += 1
+                ScrowIndex = 0
+            if headlineIndex >= len(news):    
+                headlineIndex = 0
                 SourceIndex += 1
+            if SourceIndex >= len(sources_list):
+                SourceIndex = 0
+                
+            ScrowNews(news,source,headlineIndex,ScrowIndex,150)
+            ScrowIndex += 32
+        else:
+            SourceIndex += 1
+
