@@ -86,6 +86,7 @@ def handle_interrupt(pin):
 Power_button.irq(trigger=Pin.IRQ_FALLING, handler=handle_interrupt)
 
 white = st7789.color565(255, 255, 255)
+light_gray = st7789.color565(180, 180, 180)
 wlan = network.WLAN(network.STA_IF)
 
 def PrintToScreen(text,x,y):
@@ -95,7 +96,7 @@ def PrintToScreen(text,x,y):
     textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
     IBM_font = fontlib.font("IBM BIOS (8,8).bmp") # Loads font to ram
     textfbuf.fill(0)
-    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=white)
+    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=light_gray)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
 
 def PrintToScreenLarge(text,x,y):
@@ -105,7 +106,7 @@ def PrintToScreenLarge(text,x,y):
     textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
     IBM_font = fontlib.font("IBM BIOS (16,16).bmp") # Loads font to ram
     textfbuf.fill(0)
-    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=white)
+    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=light_gray)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
     
 def ConnectToSSID(SSID,password=''):
