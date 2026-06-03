@@ -50,6 +50,38 @@ def handle_interrupt(pin):
     print("Powering Down")
     display.fill(0)
     machine.reset()
+    Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
+
+# waits for power button to be pressed
+while not Power_button.value():
+    pass
+
+spi = SPI(1,
+          baudrate=31250000,
+          polarity=1,
+          phase=1,
+          bits=8,
+          firstbit=SPI.MSB,
+          sck=Pin(4),
+          mosi=Pin(5))
+
+display = st7789.ST7789(
+    spi,
+    screen_width,
+    screen_height,
+    reset=Pin(9, Pin.OUT),
+    #cs=Pin(9, Pin.OUT),
+    dc=Pin(8, Pin.OUT),
+    backlight=Pin(7, Pin.OUT),
+    rotation=screen_rotation)
+
+display.fill(0)
+
+# interupt to reset the system when power button is turned off
+def handle_interrupt(pin):
+    print("Powering Down")
+    display.fill(0)
+    machine.reset()
     
 Power_button.irq(trigger=Pin.IRQ_FALLING, handler=handle_interrupt)
 
@@ -114,9 +146,6 @@ def GetTimeNtp():
 def TimeString(UTC_OFFSET=-3):
     offset_seconds = int(UTC_OFFSET * 3600)
     local_time = time.gmtime(time.time() + offset_seconds)
-    year = str(local_time[0])
-    month = "%02d" % local_time[2]
-    day = "%02d" % local_time[1]
     hour = "%02d" % local_time[3]
     minutes = "%02d" % local_time[4]
     seconds = "%02d" % local_time[5]
@@ -128,17 +157,24 @@ def DateString(UTC_OFFSET=-3):
     year = str(time.gmtime()[0])
     month = "%02d" % local_time[2]
     day = "%02d" % local_time[1]
-    hour = "%02d" % local_time[3]
-    minutes = "%02d" % local_time[4]
-    seconds = "%02d" % local_time[5]
     return (day+'/'+month+'/'+year)
 
-def GetNewsDict():
-    url = "https://news-agregator-rb77.onrender.com/api/today"
+def GetNewsDict(UTC_OFFSET=-3):
+    offset_seconds = int(UTC_OFFSET * 3600)
+    local_time = time.gmtime(time.time() + offset_seconds)
+    year = str(time.gmtime()[0])
+    month = "%02d" % local_time[2]
+    day = "%02d" % local_time[1]
+    date = year+'-'+day+'-'+month
+    print("getting news for date:"+date)
+    url = "https://news-agregator-rb77.onrender.com/api/"+date
     try:
         resp = urequests.get(url)
         if resp.status_code == 200:
             return(resp.json())
+        else:
+            print(resp.text)
+            return None
     except Exception as e:
         sys.print_exception(e, sys.stdout)
         return None
@@ -155,8 +191,9 @@ News_Flag = False
 ScrowIndex = 0
 SourceIndex = 0
 headlineIndex = 0
-news_dict = {}
+news_dict = None
 sources_list = []
+
 if wlan.isconnected():
     PrintToScreen('Getting The Time Online',0,20)
     GetTimeNtp()
@@ -165,8 +202,8 @@ if wlan.isconnected():
         time_string = TimeString()
         PrintToScreenLarge(time_string,54,100)
         if time_string.split(':')[1] == '00':
-            news_dict != {} # resets the news_dictionary every hour
-        if news_dict != {}:
+            news_dict != None # resets the news_dictionary every hour
+        if news_dict != None:
             source = sources_list[SourceIndex]
             news = news_dict[source]
             if len(news) > 0:
@@ -189,6 +226,9 @@ if wlan.isconnected():
             PrintToScreenLarge(DateString(),38,120) #only need to print this once
             PrintToScreenLarge(' [News] ',54,150)
             PrintToScreenLarge('[Loading]',48,175)
+            
             news_dict = GetNewsDict()
-            sources_list = list(news_dict.keys())
+            if news_dict != None:
+                sources_list = list(news_dict.keys())
+                time.sleep(10)
             print(sources_list)

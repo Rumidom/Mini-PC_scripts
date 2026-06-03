@@ -52,6 +52,7 @@ def handle_interrupt(pin):
 Power_button.irq(trigger=Pin.IRQ_FALLING, handler=handle_interrupt)
 
 white = st7789.color565(255, 255, 255)
+light_gray = st7789.color565(220, 220, 220)
 wlan = network.WLAN(network.STA_IF)
 
 def PrintToScreen(text,x,y):
