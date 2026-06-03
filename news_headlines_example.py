@@ -212,7 +212,7 @@ if wlan.isconnected():
             news_dict = None # resets the news_dictionary every hour
         
         if news_dict == {}:
-            PrintToScreenLarge(DateString(),38,120) # no need to print every loop
+            PrintToScreenLarge(date_string,38,120) # no need to print every loop
             #PrintToScreenLarge('[Loading News]',2,150)
             time.sleep(1)
             news_dict = GetNewsDict()
