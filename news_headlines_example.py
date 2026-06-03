@@ -19,6 +19,7 @@ max_chars_on_screen = 15 # 16x16 font
 wifi_ssid = 'YOURWIFISSID'
 wifi_password = 'YOURWIFIPASSWORD'
 
+
 Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
 
 # waits for power button to be pressed
@@ -139,14 +140,6 @@ def ConnectToSSID(SSID,password=''):
         return(False)
 
 # find your UTC offset here: https://en.wikipedia.org/wiki/List_of_UTC_offsets
-def GetTimeNtp():
-    try:
-        ntptime.settime()
-        return True
-    except Exception as e:
-        sys.print_exception(e, sys.stdout)
-        return False
-    
 def TimeString(UTC_OFFSET=-3):
     offset_seconds = int(UTC_OFFSET * 3600)
     local_time = time.gmtime(time.time() + offset_seconds)
@@ -174,7 +167,7 @@ def GetNewsDict(UTC_OFFSET=-3):
     url = "https://news-agregator-rb77.onrender.com/api/"+date
     try:
         gc.collect()
-        resp = requests.get(url)
+        resp = requests.get(url,timeout=30)
         if resp.status_code == 200:
             return(resp.json())
         else:
@@ -201,7 +194,7 @@ sources_list = []
 
 if wlan.isconnected():
     PrintToScreen('Getting The Time Online',0,20)
-    GetTimeNtp()
+    ntptime.settime()
     display.fill(0)
     while True:
         time_string = TimeString()
@@ -209,14 +202,14 @@ if wlan.isconnected():
         PrintToScreenLarge(time_string,54,100)
                 
         if time_string.split(':')[1] == '00':
-            news_dict = None # resets the news_dictionary every hour
+            news_dict = {} # resets the news_dictionary every hour
         
         if news_dict == {}:
-            PrintToScreenLarge(date_string,38,120) # no need to print every loop
+            PrintToScreenLarge(DateString(),38,120) # no need to print every loop
             #PrintToScreenLarge('[Loading News]',2,150)
             time.sleep(1)
             news_dict = GetNewsDict()
-            if news_dict != None:
+            if news_dict != {}:
                 sources_list = list(news_dict.keys())
                 print(sources_list)
             else:
