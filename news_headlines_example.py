@@ -9,6 +9,7 @@ import time
 import sys
 import machine
 import ntptime
+import gc
 
 screen_width = 240
 screen_height = 240
@@ -110,7 +111,9 @@ def PrintToScreenLarge(text,x,y):
     display.blit_buffer(textBuffer, 0, y, textW, textH)
     
 def ConnectToSSID(SSID,password=''):
+    wlan.active(False)
     wlan.active(True)
+    #time.sleep(5)
     wlan.disconnect()
     wlan.connect(SSID, password)
     # Wait for connection.
@@ -170,15 +173,16 @@ def GetNewsDict(UTC_OFFSET=-3):
     print("getting news for date:"+date)
     url = "https://news-agregator-rb77.onrender.com/api/"+date
     try:
-        resp = urequests.get(url)
+        gc.collect()
+        resp = requests.get(url)
         if resp.status_code == 200:
             return(resp.json())
         else:
             print(resp.text)
-            return None
+            return {}
     except Exception as e:
         sys.print_exception(e, sys.stdout)
-        return None
+        return {}
     
 def ScrowNews(News,source,headlineIndex,ScrowIndex,y):
     if ScrowIndex == 0:
@@ -192,7 +196,7 @@ News_Flag = False
 ScrowIndex = 0
 SourceIndex = 0
 headlineIndex = 0
-news_dict = None
+news_dict = {}
 sources_list = []
 
 if wlan.isconnected():
@@ -201,10 +205,23 @@ if wlan.isconnected():
     display.fill(0)
     while True:
         time_string = TimeString()
+        date_string = DateString()
         PrintToScreenLarge(time_string,54,100)
+                
         if time_string.split(':')[1] == '00':
-            news_dict != None # resets the news_dictionary every hour
-        if news_dict != None:
+            news_dict = None # resets the news_dictionary every hour
+        
+        if news_dict == {}:
+            PrintToScreenLarge(DateString(),38,120) # no need to print every loop
+            #PrintToScreenLarge('[Loading News]',2,150)
+            time.sleep(1)
+            news_dict = GetNewsDict()
+            if news_dict != None:
+                sources_list = list(news_dict.keys())
+                print(sources_list)
+            else:
+                time.sleep(10)
+        else:
             source = sources_list[SourceIndex]
             news = news_dict[source]
             if len(news) > 0:
@@ -222,14 +239,3 @@ if wlan.isconnected():
                 ScrowIndex += 32
             else:
                 SourceIndex += 1
-                
-        else:
-            PrintToScreenLarge(DateString(),38,120) #only need to print this once
-            PrintToScreenLarge(' [News] ',54,150)
-            PrintToScreenLarge('[Loading]',48,175)
-            
-            news_dict = GetNewsDict()
-            if news_dict != None:
-                sources_list = list(news_dict.keys())
-                time.sleep(10)
-            print(sources_list)
