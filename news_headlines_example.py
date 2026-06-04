@@ -207,7 +207,7 @@ while True:
     
     if news_dict == {}:
         PrintToScreenLarge(DateString(),38,120) # no need to print every loop
-        #PrintToScreenLarge('[Loading News]',2,150)
+        PrintToScreenLarge('‘‘‘‘‘‘',2,150)
         time.sleep(1)
         news_dict = GetNewsDict()
         if news_dict != {}:
