@@ -19,6 +19,7 @@ machine.freq(80000000) # seems more stable at lower freq
 
 wifi_ssid = 'YOURWIFISSID'
 wifi_password = 'YOURWIFIPASSWORD'
+
 Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
 
 # waits for power button to be pressed
@@ -164,9 +165,11 @@ def GetNewsDict(UTC_OFFSET=-3):
     date = year+'-'+day+'-'+month
     print("getting news for date:"+date)
     url = "https://news-agregator-rb77.onrender.com/api/"+date
+
     try:
         gc.collect()
         resp = requests.get(url,timeout=30)
+        time.sleep(5)
         if resp != None:
             if resp.status_code == 200:
                 
@@ -177,6 +180,7 @@ def GetNewsDict(UTC_OFFSET=-3):
     except Exception as e:
         sys.print_exception(e, sys.stdout)
         return {}
+
         
 
     
@@ -184,8 +188,7 @@ def ScrowNews(News,source,headlineIndex,ScrowIndex,y):
     if ScrowIndex == 0:
         PrintToScreenLarge(source,screen_width//2-len(source)*8,y)
     headline = News[headlineIndex]['title']
-    i = ScrowIndex//9
-    PrintToScreenLarge(headline[:i],screen_width-ScrowIndex,y+25)
+    PrintToScreenLarge(headline[:ScrowIndex],screen_width-ScrowIndex*17,y+25)
         
 ConnectToSSID(wifi_ssid,password=wifi_password)
 News_Flag = False
@@ -213,7 +216,6 @@ while True:
     if news_dict == {}:
         PrintToScreenLarge(date_string,38,120) # no need to print every loop
         #PrintToScreenLarge('',2,150)
-        time.sleep(1)
         news_dict = GetNewsDict()
         gc.collect()
         if news_dict != {}:
@@ -228,7 +230,7 @@ while True:
             if time.ticks_ms() - scrowTimeTrigg > 200:
                 scrowTimeTrigg = time.ticks_ms()
                 headline_len = len(news[headlineIndex]['title'])
-                if ScrowIndex > (headline_len+max_chars_on_screen)*16:
+                if ScrowIndex > headline_len+max_chars_on_screen+5:
                     headlineIndex += 1
                     ScrowIndex = 0
                 if headlineIndex >= len(news):    
@@ -238,6 +240,6 @@ while True:
                     SourceIndex = 0
                     
                 ScrowNews(news,source,headlineIndex,ScrowIndex,150)
-                ScrowIndex += 16
+                ScrowIndex += 1
         else:
             SourceIndex += 1
