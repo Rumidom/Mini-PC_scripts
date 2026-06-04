@@ -15,10 +15,10 @@ screen_width = 240
 screen_height = 240
 screen_rotation = 3
 max_chars_on_screen = 15 # 16x16 font
+machine.freq(80000000) # seems more stable at lower freq
 
 wifi_ssid = 'YOURWIFISSID'
 wifi_password = 'YOURWIFIPASSWORD'
-
 Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
 
 # waits for power button to be pressed
@@ -86,18 +86,19 @@ def handle_interrupt(pin):
     
 Power_button.irq(trigger=Pin.IRQ_FALLING, handler=handle_interrupt)
 
-white = st7789.color565(255, 255, 255)
+#white = st7789.color565(255, 255, 255)
 light_gray = st7789.color565(180, 180, 180)
 wlan = network.WLAN(network.STA_IF)
+IBM_font_large = fontlib.font("IBM BIOS (16,16).bmp") # Loads font to ram
+IBM_font_small = fontlib.font("IBM BIOS (8,8).bmp") # Loads font to ram
 
 def PrintToScreen(text,x,y):
     textW = screen_width
     textH = 8
     textBuffer = bytearray(screen_width * textH * 2) #two bytes for each pixel
     textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
-    IBM_font = fontlib.font("IBM BIOS (8,8).bmp") # Loads font to ram
     textfbuf.fill(0)
-    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=light_gray)
+    fontlib.prt(text,x,0,1,textfbuf,IBM_font_small,color=light_gray)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
 
 def PrintToScreenLarge(text,x,y):
@@ -105,9 +106,8 @@ def PrintToScreenLarge(text,x,y):
     textH = 16
     textBuffer = bytearray(screen_width * textH * 2) #two bytes for each pixel
     textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
-    IBM_font = fontlib.font("IBM BIOS (16,16).bmp") # Loads font to ram
     textfbuf.fill(0)
-    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=light_gray)
+    fontlib.prt(text,x,0,1,textfbuf,IBM_font_large,color=light_gray)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
     
 def ConnectToSSID(SSID,password=''):
@@ -167,14 +167,18 @@ def GetNewsDict(UTC_OFFSET=-3):
     try:
         gc.collect()
         resp = requests.get(url,timeout=30)
-        if resp.status_code == 200:
-            return(resp.json())
-        else:
-            print(resp.text)
-            return {}
+        if resp != None:
+            if resp.status_code == 200:
+                
+                return(resp.json())
+            else:
+                print(resp.text)
+                return {}
     except Exception as e:
         sys.print_exception(e, sys.stdout)
         return {}
+        
+
     
 def ScrowNews(News,source,headlineIndex,ScrowIndex,y):
     if ScrowIndex == 0:
@@ -193,7 +197,8 @@ sources_list = []
 ntptime.settime()
 display.fill(0)
 last_time_string = ''
-
+scrowTimeTrigg = 0
+gc.collect()
 while True:
     time_string = TimeString()
     date_string = DateString()
@@ -206,10 +211,11 @@ while True:
         news_dict = {} # resets the news_dictionary every hour
     
     if news_dict == {}:
-        PrintToScreenLarge(DateString(),38,120) # no need to print every loop
-        PrintToScreenLarge('‘‘‘‘‘‘',2,150)
+        PrintToScreenLarge(date_string,38,120) # no need to print every loop
+        #PrintToScreenLarge('',2,150)
         time.sleep(1)
         news_dict = GetNewsDict()
+        gc.collect()
         if news_dict != {}:
             sources_list = list(news_dict.keys())
             print(sources_list)
@@ -219,18 +225,19 @@ while True:
         source = sources_list[SourceIndex]
         news = news_dict[source]
         if len(news) > 0:
-            headline_len = len(news[headlineIndex]['title'])
-            if ScrowIndex > (headline_len+max_chars_on_screen)*16:
-                headlineIndex += 1
-                ScrowIndex = 0
-            if headlineIndex >= len(news):    
-                headlineIndex = 0
-                SourceIndex += 1
-            if SourceIndex >= len(sources_list):
-                SourceIndex = 0
-                
-            ScrowNews(news,source,headlineIndex,ScrowIndex,150)
-            ScrowIndex += 32
+            if time.ticks_ms() - scrowTimeTrigg > 200:
+                scrowTimeTrigg = time.ticks_ms()
+                headline_len = len(news[headlineIndex]['title'])
+                if ScrowIndex > (headline_len+max_chars_on_screen)*16:
+                    headlineIndex += 1
+                    ScrowIndex = 0
+                if headlineIndex >= len(news):    
+                    headlineIndex = 0
+                    SourceIndex += 1
+                if SourceIndex >= len(sources_list):
+                    SourceIndex = 0
+                    
+                ScrowNews(news,source,headlineIndex,ScrowIndex,150)
+                ScrowIndex += 16
         else:
             SourceIndex += 1
-
