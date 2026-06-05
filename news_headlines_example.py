@@ -48,7 +48,7 @@ display = st7789.ST7789(
 display.fill(0)
 
 # interupt to reset the system when power button is turned off
-def handle_interrupt(pin):
+def handleInterrupt(pin):
     print("Powering Down")
     display.fill(0)
     machine.reset()
@@ -80,12 +80,12 @@ display = st7789.ST7789(
 display.fill(0)
 
 # interupt to reset the system when power button is turned off
-def handle_interrupt(pin):
+def handleInterrupt(pin):
     print("Powering Down")
     display.fill(0)
     machine.reset()
     
-Power_button.irq(trigger=Pin.IRQ_FALLING, handler=handle_interrupt)
+Power_button.irq(trigger=Pin.IRQ_FALLING, handler=handleInterrupt)
 
 #white = st7789.color565(255, 255, 255)
 light_gray = st7789.color565(180, 180, 180)
@@ -93,7 +93,7 @@ wlan = network.WLAN(network.STA_IF)
 IBM_font_large = fontlib.font("IBM BIOS (16,16).bmp") # Loads font to ram
 IBM_font_small = fontlib.font("IBM BIOS (8,8).bmp") # Loads font to ram
 
-def PrintToScreen(text,x,y):
+def printToScreen(text,x,y):
     textW = screen_width
     textH = 8
     textBuffer = bytearray(screen_width * textH * 2) #two bytes for each pixel
@@ -102,7 +102,7 @@ def PrintToScreen(text,x,y):
     fontlib.prt(text,x,0,1,textfbuf,IBM_font_small,color=light_gray)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
 
-def PrintToScreenLarge(text,x,y):
+def printToScreenLarge(text,x,y):
     textW = screen_width
     textH = 16
     textBuffer = bytearray(screen_width * textH * 2) #two bytes for each pixel
@@ -111,7 +111,7 @@ def PrintToScreenLarge(text,x,y):
     fontlib.prt(text,x,0,1,textfbuf,IBM_font_large,color=light_gray)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
     
-def ConnectToSSID(SSID,password=''):
+def connectToSSID(SSID,password=''):
     wlan.active(False)
     wlan.active(True)
     #time.sleep(5)
@@ -121,26 +121,26 @@ def ConnectToSSID(SSID,password=''):
     timeout = 0
     display.fill(0)
     while not wlan.isconnected():
-        PrintToScreen(wifi_ssid,0,0)
-        PrintToScreen('Connecting'+'.'*timeout,0,10)
+        printToScreen(wifi_ssid,0,0)
+        printToScreen('Connecting'+'.'*timeout,0,10)
         timeout += 1
         if timeout == 10:
             break
         time.sleep(1)
     if wlan.isconnected():
         display.fill(0)
-        PrintToScreen('Connected!',0,0)
-        PrintToScreen(str(wlan.ifconfig()[0]),0,10)
+        printToScreen('Connected!',0,0)
+        printToScreen(str(wlan.ifconfig()[0]),0,10)
         time.sleep(4)
         return(True)
     else:
         display.fill(0)
-        PrintToScreen("Connection Failed.",0,0)
+        printToScreen("Connection Failed.",0,0)
         time.sleep(4)
         return(False)
 
 # find your UTC offset here: https://en.wikipedia.org/wiki/List_of_UTC_offsets
-def TimeString(UTC_OFFSET=-3):
+def timeString(UTC_OFFSET=-3):
     offset_seconds = int(UTC_OFFSET * 3600)
     local_time = time.gmtime(time.time() + offset_seconds)
     hour = "%02d" % local_time[3]
@@ -148,7 +148,7 @@ def TimeString(UTC_OFFSET=-3):
     seconds = "%02d" % local_time[5]
     return (hour+':'+minutes+':'+seconds)
 
-def DateString(UTC_OFFSET=-3):
+def dateString(UTC_OFFSET=-3):
     offset_seconds = int(UTC_OFFSET * 3600)
     local_time = time.gmtime(time.time() + offset_seconds)
     year = str(time.gmtime()[0])
@@ -156,7 +156,7 @@ def DateString(UTC_OFFSET=-3):
     day = "%02d" % local_time[1]
     return (day+'/'+month+'/'+year)
 
-def GetNewsDict(UTC_OFFSET=-3):
+def getNewsDict(UTC_OFFSET=-3):
     offset_seconds = int(UTC_OFFSET * 3600)
     local_time = time.gmtime(time.time() + offset_seconds)
     year = str(time.gmtime()[0])
@@ -181,47 +181,47 @@ def GetNewsDict(UTC_OFFSET=-3):
         sys.print_exception(e, sys.stdout)
         return {}
 
-def scrollNews(News,source,headlineIndex,scrollIndex,y):
-    if scrollIndex == 0: # only prints once
-        PrintToScreenLarge(source,screen_width//2-len(source)*8,y)
-    headline = News[headlineIndex]['title']
+def scrollNews(News,source,headlineindex,scrollindex,y):
+    if scrollindex == 0: # only prints once
+        printToScreenLarge(source,screen_width//2-len(source)*8,y)
+    headline = News[headlineindex]['title']
     init_hd_len = len(headline)
-    headline = headline[:scrollIndex]
-    if scrollIndex > max_chars_on_screen:
+    headline = headline[:scrollindex]
+    if scrollindex > max_chars_on_screen:
         hd_len = len(headline)
         headline = headline[hd_len-max_chars_on_screen:]       
-        PrintToScreenLarge(headline,(hd_len-scrollIndex)*17,y+25)
+        printToScreenLarge(headline,(hd_len-scrollindex)*17,y+25)
     else:
-        PrintToScreenLarge(headline,(max_chars_on_screen-scrollIndex)*17,y+25)
+        printToScreenLarge(headline,(max_chars_on_screen-scrollindex)*17,y+25)
 
-ConnectToSSID(wifi_ssid,password=wifi_password)
+connectToSSID(wifi_ssid,password=wifi_password)
 news_Flag = False
-scrollIndex = 0
-sourceIndex = 0
-headlineIndex = 0
+scrollindex = 0
+source_index = 0
+headlineindex = 0
 news_dict = {}
 sources_list = []
 ntptime.settime()
 display.fill(0)
 last_time_string = ''
-scrollTimeTrigg = 0
+scroll_time_trigg = 0
 gc.collect()
 
 while True:
-    time_string = TimeString()
-    date_string = DateString()
+    time_string = timeString()
+    date_string = dateString()
     
     if time_string != last_time_string:
-        PrintToScreenLarge(time_string,54,100)
+        printToScreenLarge(time_string,54,100)
         last_time_string = time_string
         
     if time_string.split(':')[1] == '00':
         news_dict = {} # resets the news_dictionary every hour
     
     if news_dict == {}:
-        PrintToScreenLarge(date_string,38,120) # no need to print every loop
-        #PrintToScreenLarge('',2,150)
-        news_dict = GetNewsDict()
+        printToScreenLarge(date_string,38,120) # no need to print every loop
+        #printToScreenLarge('',2,150)
+        news_dict = getNewsDict()
         gc.collect()
         if news_dict != {}:
             sources_list = list(news_dict.keys())
@@ -229,22 +229,22 @@ while True:
         else:
             time.sleep(10)
     else:
-        source = sources_list[sourceIndex]
+        source = sources_list[source_index]
         news = news_dict[source]
         if len(news) > 0:
-            if time.ticks_ms() - scrollTimeTrigg > 200:
-                scrollTimeTrigg = time.ticks_ms()
-                headline_len = len(news[headlineIndex]['title'])
-                if scrollIndex > headline_len+max_chars_on_screen+5:
-                    headlineIndex += 1
-                    scrollIndex = 0
-                if headlineIndex >= len(news):    
-                    headlineIndex = 0
-                    sourceIndex += 1
-                if sourceIndex >= len(sources_list):
-                    sourceIndex = 0
+            if time.ticks_ms() - scroll_time_trigg > 200:
+                scroll_time_trigg = time.ticks_ms()
+                headline_len = len(news[headlineindex]['title'])
+                if scrollindex > headline_len+max_chars_on_screen+5:
+                    headlineindex += 1
+                    scrollindex = 0
+                if headlineindex >= len(news):    
+                    headlineindex = 0
+                    source_index += 1
+                if source_index >= len(sources_list):
+                    source_index = 0
                     
-                scrollNews(news,source,headlineIndex,scrollIndex,150)
-                scrollIndex += 1
+                scrollNews(news,source,headlineindex,scrollindex,150)
+                scrollindex += 1
         else:
-            sourceIndex += 1
+            source_index += 1
