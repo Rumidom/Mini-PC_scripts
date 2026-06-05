@@ -10,6 +10,6 @@ https://github.com/Rumidom/Micropython_Fontlib/
 https://github.com/Rumidom/ugif
 
 ## Meme Reciever:
-I made this mini computer to recieve images via a telegram bot, that script has its own repository:  
+I made this mini computer to recieve images via a telegram bot, you can find that script here:  
 [https://github.com/Rumidom/Meme-Receiver](https://github.com/Rumidom/Meme-Reciever/tree/main)
 
