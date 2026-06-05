@@ -244,7 +244,7 @@ while True:
                 if SourceIndex >= len(sources_list):
                     SourceIndex = 0
                     
-                ScrollNews(news,source,headlineIndex,ScrollIndex,150)
+                scrollNews(news,source,headlineIndex,ScrollIndex,150)
                 ScrollIndex += 1
         else:
             SourceIndex += 1
