@@ -163,7 +163,7 @@ def GetNewsDict(UTC_OFFSET=-3):
     month = "%02d" % local_time[2]
     day = "%02d" % local_time[1]
     date = year+'-'+day+'-'+month
-    print("getting news for date:"+date)
+    #print("getting news for date:"+date)
     url = "https://news-agregator-rb77.onrender.com/api/"+date
 
     try:
@@ -181,30 +181,30 @@ def GetNewsDict(UTC_OFFSET=-3):
         sys.print_exception(e, sys.stdout)
         return {}
 
-def scrollNews(News,source,headlineIndex,ScrollIndex,y):
-    if ScrollIndex == 0: # only prints once
+def scrollNews(News,source,headlineIndex,scrollIndex,y):
+    if scrollIndex == 0: # only prints once
         PrintToScreenLarge(source,screen_width//2-len(source)*8,y)
     headline = News[headlineIndex]['title']
     init_hd_len = len(headline)
-    headline = headline[:ScrollIndex]
-    if ScrollIndex > max_chars_on_screen:
+    headline = headline[:scrollIndex]
+    if scrollIndex > max_chars_on_screen:
         hd_len = len(headline)
         headline = headline[hd_len-max_chars_on_screen:]       
-        PrintToScreenLarge(headline,(hd_len-ScrollIndex)*17,y+25)
+        PrintToScreenLarge(headline,(hd_len-scrollIndex)*17,y+25)
     else:
-        PrintToScreenLarge(headline,(max_chars_on_screen-ScrollIndex)*17,y+25)
+        PrintToScreenLarge(headline,(max_chars_on_screen-scrollIndex)*17,y+25)
 
 ConnectToSSID(wifi_ssid,password=wifi_password)
-News_Flag = False
-ScrollIndex = 0
-SourceIndex = 0
+news_Flag = False
+scrollIndex = 0
+sourceIndex = 0
 headlineIndex = 0
 news_dict = {}
 sources_list = []
 ntptime.settime()
 display.fill(0)
 last_time_string = ''
-ScrollTimeTrigg = 0
+scrollTimeTrigg = 0
 gc.collect()
 
 while True:
@@ -229,22 +229,22 @@ while True:
         else:
             time.sleep(10)
     else:
-        source = sources_list[SourceIndex]
+        source = sources_list[sourceIndex]
         news = news_dict[source]
         if len(news) > 0:
-            if time.ticks_ms() - ScrollTimeTrigg > 200:
-                ScrollTimeTrigg = time.ticks_ms()
+            if time.ticks_ms() - scrollTimeTrigg > 200:
+                scrollTimeTrigg = time.ticks_ms()
                 headline_len = len(news[headlineIndex]['title'])
-                if ScrollIndex > headline_len+max_chars_on_screen+5:
+                if scrollIndex > headline_len+max_chars_on_screen+5:
                     headlineIndex += 1
-                    ScrollIndex = 0
+                    scrollIndex = 0
                 if headlineIndex >= len(news):    
                     headlineIndex = 0
-                    SourceIndex += 1
-                if SourceIndex >= len(sources_list):
-                    SourceIndex = 0
+                    sourceIndex += 1
+                if sourceIndex >= len(sources_list):
+                    sourceIndex = 0
                     
-                scrollNews(news,source,headlineIndex,ScrollIndex,150)
-                ScrollIndex += 1
+                scrollNews(news,source,headlineIndex,scrollIndex,150)
+                scrollIndex += 1
         else:
-            SourceIndex += 1
+            sourceIndex += 1
