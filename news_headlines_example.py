@@ -181,15 +181,19 @@ def GetNewsDict(UTC_OFFSET=-3):
         sys.print_exception(e, sys.stdout)
         return {}
 
-        
-
-    
 def ScrowNews(News,source,headlineIndex,ScrowIndex,y):
-    if ScrowIndex == 0:
+    if ScrowIndex == 0: # only prints once
         PrintToScreenLarge(source,screen_width//2-len(source)*8,y)
     headline = News[headlineIndex]['title']
-    PrintToScreenLarge(headline[:ScrowIndex],screen_width-ScrowIndex*17,y+25)
-        
+    init_hd_len = len(headline)
+    headline = headline[:ScrowIndex]
+    if ScrowIndex > max_chars_on_screen:
+        hd_len = len(headline)
+        headline = headline[hd_len-max_chars_on_screen:]       
+        PrintToScreenLarge(headline,(hd_len-ScrowIndex)*17,y+25)
+    else:
+        PrintToScreenLarge(headline,(max_chars_on_screen-ScrowIndex)*17,y+25)
+
 ConnectToSSID(wifi_ssid,password=wifi_password)
 News_Flag = False
 ScrowIndex = 0
@@ -202,6 +206,7 @@ display.fill(0)
 last_time_string = ''
 scrowTimeTrigg = 0
 gc.collect()
+
 while True:
     time_string = TimeString()
     date_string = DateString()
