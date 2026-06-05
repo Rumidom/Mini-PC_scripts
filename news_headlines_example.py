@@ -181,22 +181,22 @@ def GetNewsDict(UTC_OFFSET=-3):
         sys.print_exception(e, sys.stdout)
         return {}
 
-def ScrowNews(News,source,headlineIndex,ScrowIndex,y):
-    if ScrowIndex == 0: # only prints once
+def scrollNews(News,source,headlineIndex,ScrollIndex,y):
+    if ScrollIndex == 0: # only prints once
         PrintToScreenLarge(source,screen_width//2-len(source)*8,y)
     headline = News[headlineIndex]['title']
     init_hd_len = len(headline)
-    headline = headline[:ScrowIndex]
-    if ScrowIndex > max_chars_on_screen:
+    headline = headline[:ScrollIndex]
+    if ScrollIndex > max_chars_on_screen:
         hd_len = len(headline)
         headline = headline[hd_len-max_chars_on_screen:]       
-        PrintToScreenLarge(headline,(hd_len-ScrowIndex)*17,y+25)
+        PrintToScreenLarge(headline,(hd_len-ScrollIndex)*17,y+25)
     else:
-        PrintToScreenLarge(headline,(max_chars_on_screen-ScrowIndex)*17,y+25)
+        PrintToScreenLarge(headline,(max_chars_on_screen-ScrollIndex)*17,y+25)
 
 ConnectToSSID(wifi_ssid,password=wifi_password)
 News_Flag = False
-ScrowIndex = 0
+ScrollIndex = 0
 SourceIndex = 0
 headlineIndex = 0
 news_dict = {}
@@ -204,7 +204,7 @@ sources_list = []
 ntptime.settime()
 display.fill(0)
 last_time_string = ''
-scrowTimeTrigg = 0
+ScrollTimeTrigg = 0
 gc.collect()
 
 while True:
@@ -232,19 +232,19 @@ while True:
         source = sources_list[SourceIndex]
         news = news_dict[source]
         if len(news) > 0:
-            if time.ticks_ms() - scrowTimeTrigg > 200:
-                scrowTimeTrigg = time.ticks_ms()
+            if time.ticks_ms() - ScrollTimeTrigg > 200:
+                ScrollTimeTrigg = time.ticks_ms()
                 headline_len = len(news[headlineIndex]['title'])
-                if ScrowIndex > headline_len+max_chars_on_screen+5:
+                if ScrollIndex > headline_len+max_chars_on_screen+5:
                     headlineIndex += 1
-                    ScrowIndex = 0
+                    ScrollIndex = 0
                 if headlineIndex >= len(news):    
                     headlineIndex = 0
                     SourceIndex += 1
                 if SourceIndex >= len(sources_list):
                     SourceIndex = 0
                     
-                ScrowNews(news,source,headlineIndex,ScrowIndex,150)
-                ScrowIndex += 1
+                ScrollNews(news,source,headlineIndex,ScrollIndex,150)
+                ScrollIndex += 1
         else:
             SourceIndex += 1
