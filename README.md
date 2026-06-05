@@ -1,6 +1,9 @@
 # Mini Computer examples
 A few micropython examples to run on this [Mini computer](https://cults3d.com/en/3d-model/gadget/esp32-mini-vintage-computer):  
+<div align="center">
 <img src="https://github.com/Rumidom/Mini-PC_scripts/blob/main/readme_demo.gif" width="400">
+</div>  
+
 ## Libraries:
 libraries here might be outdated, their repositories are:   
 https://github.com/Rumidom/Micropython_Fontlib/  
