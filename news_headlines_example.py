@@ -176,7 +176,7 @@ def getNewsDict(UTC_OFFSET=-3):
                 return(resp.json())
             else:
                 print(resp.text)
-                return {}
+                return {'':[]}
     except Exception as e:
         sys.print_exception(e, sys.stdout)
         return {}
@@ -229,6 +229,8 @@ while True:
         else:
             time.sleep(10)
     else:
+        if source_index >= len(sources_list):
+            source_index = 0
         source = sources_list[source_index]
         news = news_dict[source]
         if len(news) > 0:
@@ -241,8 +243,6 @@ while True:
                 if headlineindex >= len(news):    
                     headlineindex = 0
                     source_index += 1
-                if source_index >= len(sources_list):
-                    source_index = 0
                     
                 scrollNews(news,source,headlineindex,scrollindex,150)
                 scrollindex += 1
