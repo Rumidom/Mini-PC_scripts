@@ -52,7 +52,6 @@ def handleInterrupt(pin):
     print("Powering Down")
     display.fill(0)
     machine.reset()
-    Power_button = Pin(3, Pin.IN, Pin.PULL_UP)
 
 # waits for power button to be pressed
 while not Power_button.value():
@@ -194,6 +193,16 @@ def scrollNews(News,source,headlineindex,scrollindex,y):
     else:
         printToScreenLarge(headline,(max_chars_on_screen-scrollindex)*17,y+25)
 
+def check_internet_connection():
+    try:
+        response = requests.get("http://www.google.com")
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except requests.exceptions.RequestException:
+        return False
+    
 connectToSSID(wifi_ssid,password=wifi_password)
 news_Flag = False
 scrollindex = 0
@@ -227,6 +236,8 @@ while True:
             sources_list = list(news_dict.keys())
             print(sources_list)
         else:
+            if not check_internet_connection(): # auto reset if there is no internet connection
+                machine.reset()
             time.sleep(10)
     else:
         if source_index >= len(sources_list):

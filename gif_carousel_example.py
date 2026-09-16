@@ -27,10 +27,12 @@ display = st7789.ST7789(
     rotation=screen_rotation)
 
 def drawToScreen_PixelbyPixel(x, y, color):
-    display.pixel(x, y, color)
+    display.push_pixel(color)
+    #display.pixel(x, y, color)
+    
 
 display.fill(0)
-gif_files = ['01.gif','02.gif','03.gif','04.gif']
+gif_files = ['08.gif','09.gif','10.gif','11.gif','12.gif','13.gif','14.gif']
 gif_files.sort()
 
 while True:

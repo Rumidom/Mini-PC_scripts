@@ -192,6 +192,8 @@ class ST7789():
 
         self._display_width = self.width = width
         self._display_height = self.height = height
+        self.num_of_Pixels = width*height
+        self.push_pixel_count = 0
         self.xstart = 0
         self.ystart = 0
         self.spi = spi
@@ -364,7 +366,18 @@ class ST7789():
     def pixel(self, x, y, color):
         self._set_window(x, y, x, y)
         self._write(None, _encode_pixel(color))
-    
+
+    def push_pixel(self,color):
+        if self.push_pixel_count == 0:
+            self._set_columns(0, self._display_width-1)
+            self._set_rows(0, self._display_height-1)
+            self._write(ST7789_RAMWR)
+        self._write(None, _encode_pixel(color))
+        self.push_pixel_count += 1
+        if (self.push_pixel_count >= self.num_of_Pixels):
+            self._write(ST7789_NOP)
+            self.push_pixel_count = 0
+            
     def rect(self, x, y, w, h, color):
         self.hline(x, y, w, color)
         self.vline(x, y, h, color)
