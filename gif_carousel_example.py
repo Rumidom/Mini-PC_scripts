@@ -27,8 +27,8 @@ display = st7789.ST7789(
     rotation=screen_rotation)
 
 def drawToScreen_PixelbyPixel(x, y, color):
-    display.push_pixel(color)
-    #display.pixel(x, y, color)
+    #display.push_pixel(color)
+    display.pixel(x, y, color)
     
 
 display.fill(0)
