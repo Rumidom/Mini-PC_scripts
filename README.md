@@ -5,10 +5,12 @@ A few micropython examples to run on this [Mini computer](https://cults3d.com/en
 </div>  
 
 ## Wiring:
+### ESP-32 S3-Zero:
 <div align="center">
 <img src="https://github.com/Rumidom/Mini-PC_scripts/blob/main/readme%20assets/Wiring%202.png" width="400">
 </div>  
 
+### ESP-32 super mini C3:
 <div align="center">
 <img src="https://github.com/Rumidom/Mini-PC_scripts/blob/main/readme%20assets/Wiring.jpg" width="400">
 </div>  
