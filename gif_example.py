@@ -8,7 +8,7 @@ import micropython
 # set landscape screen
 screen_width = 240
 screen_height = 240
-screen_rotation = 3
+screen_rotation = 0
 
 spi = SPI(1,
           baudrate=31250000,
@@ -17,7 +17,7 @@ spi = SPI(1,
           bits=8,
           firstbit=SPI.MSB,
           sck=Pin(4),
-          mosi=Pin(5))
+          mosi=Pin(6))
 
 display = st7789.ST7789(
     spi,

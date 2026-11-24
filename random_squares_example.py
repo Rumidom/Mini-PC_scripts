@@ -21,7 +21,7 @@ spi = SPI(1,
           bits=8,
           firstbit=SPI.MSB,
           sck=Pin(4),
-          mosi=Pin(5))
+          mosi=Pin(6))
 
 display = st7789.ST7789(
     spi,

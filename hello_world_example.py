@@ -5,7 +5,7 @@ from machine import Pin, SPI
 
 screen_width = 240
 screen_height = 240
-screen_rotation = 3
+screen_rotation = 0
 
 textH = 16
 textW = 240
@@ -17,7 +17,7 @@ spi = SPI(1,
           bits=8,
           firstbit=SPI.MSB,
           sck=Pin(4),
-          mosi=Pin(5))
+          mosi=Pin(6))
 
 display = st7789.ST7789(
     spi,
@@ -28,7 +28,6 @@ display = st7789.ST7789(
     dc=Pin(8, Pin.OUT),
     backlight=Pin(7, Pin.OUT),
     rotation=screen_rotation)
-
 #Because the screen is larger 240x240 pixels creating a buffer for the whole
 #screen is impratical as it would consume 240*240*2 = 115.2kb of ram
 #we will only update a portion of the screen where the text will be written
@@ -36,12 +35,12 @@ textBuffer = bytearray(textW * textH * 2) #two bytes for each pixel
 textfbuf = framebuf.FrameBuffer(textBuffer, textW, textH, framebuf.RGB565)
 textfbuf.fill(0)
 display.fill(0)
-IBM_font = fontlib.font("IBM BIOS (16,16).bmp") # Loads font to ram
+IBM_font = fontlib.font("IBM BIOS (8,8).bmp") # Loads font to ram
 white = st7789.color565(255, 255, 255)
 
 def PrintToScreen(font,text,x,y):
     textfbuf.fill(0)
-    fontlib.prt(text,x,0,1,textfbuf,IBM_font,color=white)
+    fontlib.prt(text,x,0,1,textfbuf,IBM_font,invert=False,color=white)
     display.blit_buffer(textBuffer, 0, y, textW, textH)
 
 PrintToScreen(IBM_font,'Sphinx of ',0,100)

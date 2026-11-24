@@ -1,6 +1,7 @@
 import math
 
-def reverse_Bits(n, no_of_bits):
+@micropython.viper
+def reverse_Bits(n:int, no_of_bits:int)->int:
     result = 0
     for i in range(no_of_bits):
         result <<= 1
@@ -8,19 +9,22 @@ def reverse_Bits(n, no_of_bits):
         n >>= 1
     return result
 
+@micropython.native
 def getbitmap(path):
     try:
         file = open(path, "rb")
     except:
-        raise Exception("Cant load font, check if path is correct")
+        raise Exception("Cant load file, check if path is correct")
     filebytes = bytearray(file.read())
     file.close()
     bmptag = filebytes[0:2]
     imagesize = (int.from_bytes(filebytes[18:22],"little"),int.from_bytes(filebytes[22:26],"little"))
-    filezise =  int.from_bytes(filebytes[2:6],"little")
+    filesize =  int.from_bytes(filebytes[2:6],"little")
     dataOffset = int.from_bytes(filebytes[10:14],"little")
     fmat = int.from_bytes(filebytes[28:30],"little")
-    pallet = [0,1][b'\x00\x00\x00\x00\xff\xff\xff\xff' == filebytes[54:62]]
+    if fmat != 1:
+        raise ValueError("bmp is not monocromatic")
+    pallet = [0,1][b'\x00\x00\x00' == filebytes[54:57]]
     imagedata = bytearray(reversed(filebytes[dataOffset:]))
     bytesperrow = math.ceil(imagesize[0]/8)
     rowPadding = ((4-(bytesperrow%4))%4)
@@ -32,26 +36,27 @@ def getbitmap(path):
     for i,byte_ in enumerate(imagedata):
         imagedata[i] = reverse_Bits(byte_,8)
     for i in range(imagesize[1]):
-        imagerows.append(bytearray(reversed(imagedata[i*rowsize:(i+1)*rowsize])))
+        rowdata = bytearray(reversed(imagedata[i*rowsize:(i+1)*rowsize]))
+        if rowPadding > 0:
+            rowdata = rowdata[:-rowPadding]
+        imagerows.append(rowdata)
     imagerows = tuple(imagerows)
-    return (imagerows,imagesize,filezise,dataOffset,fmat,bmptag,pallet)
+    return (imagerows,imagesize,filesize,dataOffset,fmat,bmptag,pallet)
 
-def drawBitmap(path,x,y,fbuf):
+@micropython.native
+def drawBitmap(path,x,y,fbuf,invert=False):
     bmp_tup = getbitmap(path)
     pallet = bmp_tup[6]
     imagerows = bmp_tup[0]
     imagesize = bmp_tup[1]
     imagedata = bytearray()
-    bytesperrow = math.ceil(imagesize[0]/8)
-    rowPadding = ((4-(bytesperrow%4))%4)
-    rowsize = bytesperrow +rowPadding
     posx = x +imagesize[0]
     posy = y
     for row in imagerows:
-        imagedata += row[:-rowPadding]
-        
-    DrawPixels(x,y,imagedata,imagesize,fbuf,invert=True)
-                
+        imagedata += row
+    DrawPixels(x,y,imagedata,imagesize,fbuf,invert=invert)
+
+@micropython.native
 def getCutTile(imagerows,tilepos,chopsize,imagesize,paddingsize = 1):
     newchopsize = (chopsize[0]+paddingsize*2,chopsize[1]+paddingsize*2)
     left = tilepos[0] * newchopsize[0]
@@ -76,6 +81,7 @@ def getCutTile(imagerows,tilepos,chopsize,imagesize,paddingsize = 1):
                 k = 0
     return cutdata
 
+@micropython.native
 def chop_image(imagepath, chopsize,paddingsize = 1):
     #like dicing an onion
     bmptup = getbitmap(imagepath)
@@ -105,7 +111,8 @@ class font():
     def getchar(self,N):
         #print("N:",N)
         return self.CharList[N]
-    
+
+@micropython.native
 def DrawPixels(xpos,ypos,charbytes,charsize,fbuf,invert=False,fill = 1):
     orig_y = ypos
     orig_x = xpos
@@ -119,9 +126,10 @@ def DrawPixels(xpos,ypos,charbytes,charsize,fbuf,invert=False,fill = 1):
             if xpos >= charsize[0]+orig_x:
                 xpos = orig_x
                 ypos += 1
-            
+
+@micropython.native      
 def printchar(letter,xpos,ypos,fbuf,font,invert = False,charwidth=None,fill = 1):
-    Schar_dict = {231: (None, 99, 96), 199: (None, 67, 96), 225: (98, 97, None), 233: (98, 101, None), 237: (98, 105, None), 243: (98, 111, None), 250: (98, 117, None), 193: (103, 65, None), 201: (103, 69, None), 205: (103, 73, None), 211: (103, 79, None), 218: (103, 85, None), 226: (99, 97, None), 234: (99, 97, None), 244: (99, 111, None), 227: (94, 97, None), 245: (94, 111, None), 194: (104, 65, None), 202: (104, 69, None), 212: (104, 79, None), 195: (107, 65, None), 213: (107, 79, None)}
+    Schar_dict = {8217:(None,39,None),8216:(None,39,None),231: (None, 99, 96), 199: (None, 67, 96), 225: (98, 97, None), 233: (98, 101, None), 237: (98, 105, None), 243: (98, 111, None), 250: (98, 117, None), 193: (103, 65, None), 201: (103, 69, None), 205: (103, 73, None), 211: (103, 79, None), 218: (103, 85, None), 226: (99, 97, None), 234: (99, 97, None), 244: (99, 111, None), 227: (94, 97, None), 245: (94, 111, None), 194: (104, 65, None), 202: (104, 69, None), 212: (104, 79, None), 195: (107, 65, None), 213: (107, 79, None)}
     if charwidth == None:
         charwidth = font.size[0]
     origin = xpos
@@ -146,7 +154,7 @@ def printchar(letter,xpos,ypos,fbuf,font,invert = False,charwidth=None,fill = 1)
         addbelow = font.getchar(addbelowval)
         DrawPixels(xpos,ypos+font.size[1],addbelow,font.size,fbuf,invert=invert,fill = fill)
         
-    
+@micropython.native
 def prt(string,xpos,ypos,spce,fbuf,font,invert=False,color = None):
     char_size = font.size
     if color == None:
@@ -163,4 +171,4 @@ def prt(string,xpos,ypos,spce,fbuf,font,invert=False,color = None):
         printchar(c,xpos,ypos,fbuf,font = font,invert=invert,charwidth=char_size[0],fill=fill)
         xpos+=(spce+char_size[0])
         if (invert and i < len(string)-1):
-            fbuf.rect(xpos-spce, ypos, spce, string_height, color,fill)
+            fbuf.rect(xpos-spce, ypos, spce, string_height,fill)
